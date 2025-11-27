@@ -3,45 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website Tubagus Budi</title>
+    <title>Sistem Aset</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f2f5;
-            text-align: center;
+        /* --- STYLE UMUM & MODAL --- */
+        body { background-color: #f3f4f5; font-family: 'Poppins', sans-serif; }
+        .logo-container img { max-width: 120px; max-height: 60px; margin: 0 auto; display: block; }
+        .hidden { display: none !important; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center;
+            z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        .container {
-            background-color: white;
-            width: 80%;
-            max-width: 700px;
-            margin: 50px auto;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: white; width: 90%; max-width: 400px; border-radius: 16px; padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; transform: scale(0.9); transition: transform 0.3s ease;
         }
-        h1 { color: #2c3e50; }
-        p { color: #555; font-size: 18px; }
-        .btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-icon { font-size: 40px; margin-bottom: 15px; display: block; }
+        .modal-title { font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 8px; }
+        .modal-message { font-size: 14px; color: #6b7280; margin-bottom: 20px; line-height: 1.5; }
+        .modal-btn {
+            background: #2563eb; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 500; width: 100%; cursor: pointer; transition: background 0.2s;
         }
+        .modal-btn:hover { background: #1d4ed8; }
+        .modal-btn.error { background: #dc2626; }
+        .modal-btn.error:hover { background: #b91c1c; }
+
+        /* --- CSS KHUSUS CETAK --- */
+        @media print {
+            @page { margin: 0; size: A4 portrait; }
+            body * { visibility: hidden; }
+            #main-container, #main-container * { display: none !important; }
+            .modal-overlay { display: none !important; }
+            
+            #ba-print-view, #ba-print-view * { visibility: visible; }
+            #ba-print-view {
+                position: absolute; top: 0; left: 0; width: 100%;
+                display: block !important;
+                font-family: 'Times New Roman', Times, serif;
+                color: #000; line-height: 1.5;
+                background: white; 
+                padding: 1.5cm 2cm; 
+                box-sizing: border-box;
+            }
+
+            .print-header-wrapper { 
+                display: flex; align-items: center; justify-content: flex-start;
+                gap: 20px; margin-bottom: 15px; border-bottom: 3px double #000;
+                padding-bottom: 10px; width: 100%;
+            }
+            
+            #ba-print-view #print-logo-copy img {
+                max-width: 100px !important; height: auto !important; display: block; margin: 0;
+            }
+
+            .print-company-name {
+                font-size: 16pt; font-weight: bold; color: #000; text-transform: uppercase; line-height: 1.2;
+            }
+
+            .doc-title { text-align: center; margin-bottom: 25px; }
+            .doc-title h2 { 
+                font-size: 14pt; font-weight: bold; text-transform: uppercase; margin: 0; 
+            }
+            
+            p { margin-bottom: 10px; text-align: justify; width: 100%; }
+            
+            .info-table { width: 100%; margin-bottom: 15px; border-collapse: collapse; }
+            .info-table td { vertical-align: top; padding-bottom: 4px; line-height: 1.4; }
+            .info-table .label { width: 180px; } 
+            .info-table .sep { width: 15px; text-align: center; } 
+            .info-table .val { font-weight: bold; }
+
+            .box-content { 
+                border: 1px solid #000; padding: 10px; min-height: 80px; 
+                margin-bottom: 15px; width: 100%; box-sizing: border-box;
+            }
+
+            .ttd-section { 
+                display: flex !important; justify-content: space-between; 
+                margin-top: 40px; page-break-inside: avoid; width: 100%;
+            }
+            .ttd-box { 
+                width: 30%; display: flex; flex-direction: column; align-items: center; 
+            }
+            .ttd-title { margin-bottom: 70px; text-align: center; width: 100%; }
+            .ttd-line { border-bottom: 1px solid #000; width: 100%; margin-bottom: 5px; }
+            .ttd-name { font-weight: bold; text-align: center; width: 100%; }
+        }
+        
+        #ba-print-view { display: none; }
     </style>
 </head>
-<body>
+<body class="p-4">
 
-    <div class="container">
-        <h1>Halo, Saya Tubagus Budi</h1>
-        <p>Selamat datang di website profesional saya.</p>
-        <p>Website ini dibuat sendiri menggunakan HTML & GitHub.</p>
-        <a href="#" class="btn">Hubungi Saya</a>
+    <!-- MODAL POPUP -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div id="modal-icon" class="modal-icon"></div>
+            <h3 id="modal-title" class="modal-title">Judul</h3>
+            <p id="modal-message" class="modal-message">Pesan detail akan muncul di sini.</p>
+            <button id="modal-btn" class="modal-btn" onclick="closeModal()">Oke</button>
+        </div>
     </div>
 
+    <!-- KONTAINER INPUT (LAYAR) -->
+    <div id="main-container" class="max-w-3xl mx-auto bg-white p-6 shadow-lg rounded-xl">
+        <div id="main-logo-container" class="logo-container mb-4"></div>
+
+        <!-- 1. MENU -->
+        <div id="menu-view">
+            <h2 class="text-center font-bold text-xl mb-2 text-gray-800">Sistem Manajemen Aset</h2>
+            <p class="text-center bg-gray-100 p-2 rounded mb-6 text-sm font-mono text-gray-600 tracking-wide">ID ASET: <span id="display-id-aset">Loading...</span></p>
+            
+            <button onclick="showLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl mb-4 font-semibold shadow-sm transition flex items-center justify-center gap-2">🔐 Login (Lihat Detail Aset)</button>
+            <button onclick="showReport()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-xl font-semibold shadow-sm transition flex items-center justify-center gap-2">⚠️ Lapor Kerusakan / Hilang</button>
+        </div>
+
+        <!-- 2. FORM LAPOR -->
+        <div id="report-view" class="hidden">
+            <h2 class="text-center font-bold text-xl mb-6 border-b pb-4 text-gray-800">Formulir Berita Acara</h2>
+            <form id="baForm" onsubmit="handleBAReportSubmit(event)">
+                
+                <!-- I. DATA PELAPOR -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-blue-700 text-sm uppercase mb-3 border-b border-blue-100 pb-1">I. Data Pelapor</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Nama Lengkap</label><input type="text" id="nama" required class="border border-gray-300 p-2.5 rounded-lg w-full"></div>
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">NIK / ID Karyawan</label><input type="text" id="nik" required class="border border-gray-300 p-2.5 rounded-lg w-full"></div>
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Jabatan</label><input type="text" id="jabatan" required class="border border-gray-300 p-2.5 rounded-lg w-full"></div>
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Departemen</label><input type="text" id="dept" required class="border border-gray-300 p-2.5 rounded-lg w-full"></div>
+                    </div>
+                </div>
+
+                <!-- II. DATA ASET (Readonly) -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-blue-700 text-sm uppercase mb-3 border-b border-blue-100 pb-1">II. Detail Aset (Otomatis)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">No. Inventaris</label><input type="text" id="no_inv" readonly class="border p-2.5 rounded-lg w-full bg-gray-200 text-gray-600"></div>
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Nama Aset</label><input type="text" id="nama_aset" readonly class="border p-2.5 rounded-lg w-full bg-gray-200 text-gray-600"></div>
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Merk & Model</label><input type="text" id="merk" readonly class="border p-2.5 rounded-lg w-full bg-gray-200 text-gray-600" placeholder="-"></div>
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Lokasi</label><input type="text" id="lokasi" readonly class="border p-2.5 rounded-lg w-full bg-gray-200 text-gray-600"></div>
+                        <div class="md:col-span-2"><label class="text-xs font-medium text-gray-500 mb-1 block">No. Seri</label><input type="text" id="seri" readonly class="border p-2.5 rounded-lg w-full bg-gray-200 text-gray-600" placeholder="-"></div>
+                    </div>
+                </div>
+
+                <!-- III. KEJADIAN -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-blue-700 text-sm uppercase mb-3 border-b border-blue-100 pb-1">III. Detail Kejadian</h3>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Laporan:</label>
+                        <div class="flex space-x-6">
+                            <label class="flex items-center cursor-pointer"><input type="radio" name="jenis" value="Kerusakan" required class="mr-2 w-4 h-4 text-blue-600"> Kerusakan</label>
+                            <label class="flex items-center cursor-pointer"><input type="radio" name="jenis" value="Kehilangan" required class="mr-2 w-4 h-4 text-red-600"> Kehilangan</label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Tanggal Kejadian</label><input type="date" id="tgl" required class="border border-gray-300 p-2.5 rounded-lg w-full"></div>
+                        <div><label class="text-xs font-medium text-gray-500 mb-1 block">Waktu</label><input type="time" id="jam" required class="border border-gray-300 p-2.5 rounded-lg w-full"></div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Kronologi Kejadian</label>
+                        <textarea id="kronologi" rows="4" required class="border border-gray-300 p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none" placeholder="Jelaskan kronologi kejadian secara detail..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-xs font-medium text-gray-500 mb-1 block">Deskripsi Kerusakan / Tindakan Pelapor</label>
+                        <textarea id="tindakan" rows="2" class="border border-gray-300 p-2.5 rounded-lg w-full focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none" placeholder="Detail kerusakan atau tindakan yang sudah diambil..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- IV. NAMA PENANDA TANGAN -->
+                <div class="mb-8 border border-blue-200 bg-blue-50 p-5 rounded-xl">
+                    <h3 class="font-bold text-blue-800 text-xs uppercase mb-3 tracking-wide">Data Penanda Tangan (Untuk Dokumen Cetak)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div><label class="text-xs font-semibold text-blue-600 mb-1 block">Nama Pelapor</label><input type="text" id="ttd1" placeholder="(Otomatis)" class="border border-blue-200 p-2 rounded-lg w-full text-center text-sm"></div>
+                        <div><label class="text-xs font-semibold text-blue-600 mb-1 block">Nama Atasan</label><input type="text" id="ttd2" placeholder="Nama Atasan" class="border border-blue-200 p-2 rounded-lg w-full text-center text-sm"></div>
+                        <div><label class="text-xs font-semibold text-blue-600 mb-1 block">Nama GA</label><input type="text" id="ttd3" value="Tubagus Budi Ardiansyah" readonly class="border border-blue-200 p-2 rounded-lg w-full text-center text-sm"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <button type="submit" id="btnKirim" class="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-xl font-bold shadow-md transition">Kirim Laporan</button>
+                    <button type="button" id="btnCetak" onclick="preparePrintAndShow()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold shadow-md transition hidden">🖨️ Cetak Berita Acara</button>
+                    <button type="button" onclick="showMenu()" class="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-3 rounded-xl font-bold transition">Batal / Kembali</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 3. VIEW LOGIN -->
+        <div id="login-view" class="hidden max-w-sm mx-auto">
+            <h3 class="text-center font-bold text-2xl mb-8 text-gray-800">Login Admin</h3>
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-6">
+                <input id="u" type="text" placeholder="Username" class="border p-3.5 w-full mb-4 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-200 outline-none">
+                <input id="p" type="password" placeholder="Password" class="border p-3.5 w-full mb-2 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-200 outline-none">
+            </div>
+            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold mb-4 shadow-md transition">Masuk</button>
+            <button onclick="showMenu()" class="w-full bg-transparent text-gray-500 hover:text-gray-700 font-semibold py-2 transition">Kembali</button>
+        </div>
+
+        <!-- 4. VIEW DETAIL ASET (ADMIN) -->
+        <div id="detail-view" class="hidden">
+            <h2 class="text-xl font-bold text-center mb-6 text-gray-800">Detail Aset</h2>
+            <div id="detail-content" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm"></div>
+            <button onclick="location.reload()" class="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-xl mt-6 font-semibold transition">Keluar</button>
+        </div>
+    </div>
+
+    <!-- ================= TAMPILAN CETAK (A4 FORMAL) ================= -->
+    <div id="ba-print-view">
+        <div class="print-header-wrapper">
+            <div id="print-logo-copy"></div>
+            <div id="print-company-name" class="print-company-name"></div>
+        </div>
+
+        <div class="doc-title">
+            <h2>BERITA ACARA KERUSAKAN / KEHILANGAN ASET</h2>
+        </div>
+
+        <p>Berita acara ini dibuat pada hari <strong id="p_hari">...</strong>, tanggal <strong id="p_tgl">...</strong> bertempat di lokasi aset, oleh saya:</p>
+
+        <!-- Data Pelapor -->
+        <table class="info-table">
+            <tr><td class="label">Nama</td><td class="sep">:</td><td class="val" id="p_nama"></td></tr>
+            <tr><td class="label">ID Karyawan / NIK</td><td class="sep">:</td><td class="val" id="p_nik"></td></tr>
+            <tr><td class="label">Jabatan</td><td class="sep">:</td><td class="val" id="p_jab"></td></tr>
+            <tr><td class="label">Departemen / Bagian</td><td class="sep">:</td><td class="val" id="p_dept"></td></tr>
+        </table>
+
+        <p>Dengan ini menyatakan bahwa telah terjadi <strong id="p_jenis" style="text-transform:uppercase">...</strong> barang inventaris perusahaan dengan rincian sebagai berikut:</p>
+
+        <!-- Data Aset -->
+        <table class="info-table">
+            <tr><td class="label">No. Inventaris</td><td class="sep">:</td><td class="val" id="p_inv"></td></tr>
+            <tr><td class="label">Jenis Barang</td><td class="sep">:</td><td class="val" id="p_aset"></td></tr>
+            <tr><td class="label">Merk & Model</td><td class="sep">:</td><td class="val" id="p_merk"></td></tr>
+            <tr><td class="label">No. Seri</td><td class="sep">:</td><td class="val" id="p_seri"></td></tr>
+            <tr><td class="label">Lokasi Terakhir</td><td class="sep">:</td><td class="val" id="p_lok"></td></tr>
+        </table>
+
+        <p>Adapun kronologi kejadian sebagai berikut:</p>
+        <div class="box-content" id="p_kronologi"></div>
+        
+        <div id="box_tindakan_wrapper">
+            <p>Deskripsi kerusakan / Tindakan pelapor:</p>
+            <div class="box-content" id="p_tindakan"></div>
+        </div>
+
+        <p>Demikian berita acara ini dibuat dengan sebenar-benarnya untuk dipergunakan sebagaimana mestinya.</p>
+
+        <!-- TANDA TANGAN FIX RATA TENGAH -->
+        <div class="ttd-section">
+            <div class="ttd-box">
+                <div class="ttd-title">Yang Melaporkan,</div>
+                <div class="ttd-line"></div>
+                <div class="ttd-name">( <span id="p_ttd1"></span> )</div>
+            </div>
+            <div class="ttd-box">
+                <div class="ttd-title">Mengetahui,</div>
+                <div class="ttd-line"></div>
+                <div class="ttd-name">( <span id="p_ttd2"></span> )</div>
+            </div>
+            <div class="ttd-box">
+                <div class="ttd-title">Verifikasi GA,</div>
+                <div class="ttd-line"></div>
+                <div class="ttd-name">( <span id="p_ttd3"></span> )</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI PENTING (PASTE URL DI SINI) ---
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbya3Tv3gyDEXg4FmxjaDjM64xzT8-78pI25EwhVV6PEGiAt2GXosIrJOqeCdQ2dNl1X/exec'; 
+
+        // Ambil ID dari URL Browser (Bukan Templating lagi)
+        const urlParams = new URLSearchParams(window.location.search);
+        const idAset = urlParams.get('id') || "TIDAK-ADA-ID";
+        document.getElementById('display-id-aset').innerText = idAset;
+
+        let currentUser = null;
+
+        // --- GANTI BASE64 LOGO DI SINI ---
+        const logoUrls = {
+            RBT: "data:image/png;base64,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", 
+            TAN: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAeAAAAESCAMAAAASUPa1AAAC91BMVEUAAABkZGK0sq7QzcHJx8A8Ozm2tLOXlpWbmpiTk5PY0sOLiolgX151cXB3dHO/v76+vr6Qjo2vrq2qqqmSkpK4uLd0cG87OTicm5uPjo6UlJSuraxlZGO/vr55d3eWlJSfn56sq6tBPz18eXirqqmjo6KUlJR3dHNeXlybmpp2cnFLSkhCQT+Pjo2amJhDQUB6d3afnp2Pjo5wbWyAf3+Xl5dKSEdOTUyampqgn5+Ih4anpqY9OzmVlZV/fHuvr65RUE9HRURCQD93dnVEQ0GAfX1cXFtiYWBzb29KSUiGg4KFg4JBQD9XVlVtbGt5dXVVU1KPjo2tra2DgoFIRkbh3s12c3M/Pj1wbm2Fg4Jra2qJiIhQT06oqKienZ1IR0aYmJibm5uJiIeSkI9SUVBaWVicnJxJSEc7OjlAPz+enJyDgX9DQkHy3qNycnF9e3qLiYioqKh9e3pGRURDQkGoqKhMS0pfX17z5KlSUU9bWllxb258e3pfXlygoKB9e3qOjIuLiYmhoKCZmZlUU1GamJhDQkNnZmVwbm64uLhYV1WlpaWRj49VVFJeXVz14ZA/Pz9PTk2hoaGzs7KPj49MS0mHhYNwb25eXFxlZGLy4qlCQEB3dnWVk5KYmJg/Pj96eXiEg4H15qabm5szMjHmxG/yujI1NDOUlJT01XfnxXP23YnHolruwVjlsTuzhjLHmT5YV1Xhw4W7iSr76n6/jjNwbWu5kEX56H3cwILXoTD64WTovmPSsnLdrkH1xkP42GH65n3fxIT841r64V/hskf10mzOq2a2ijLSoj/zxUjNok3RoDvfpCfPnDT40En89rrTrnLComhUU1J2cnGUlJSSkpJ0cG93cnFzb22Pj49va2pxbWw5ODZAPz01NDK5hykvLizZoCXlqifFkCm/iyr+5l7LlSjSmiiygivepCf+41dsaGfztyfusib6yTX93lHprif2uiX70T75wSz810jhpiPBiRyLi4useiHoqh/vrxnSlht9grl3AAAA1HRSTlMABQgFDP4QPhXtEkoL9uMiGQ4pIPQ4+9ZnQ+UyqS0bYDdP9dM+GvfqETDw4NJzJ+7cVCH4U9XTw62SaFz33cpJTubmX92yNpnwrquafGZNyZ5+ZzUeGtTEpH9tLMxycMnEt1xTvKyelIZSScCaNSi9pn1zbbiHe2Ah2LZ9QMOlopuOhcy2fBaLRUPGlpKLfVQ+5LBY9Ou1mHK4KqaKiLwqlYtDwKEa6+XOgn5qsqvl49zQXvfB7enJiEno1pR81dK6o3D47b6Tk1XJwrqa9OfkWD5k9Ycc1HMAADDJSURBVHja7NzNahNRFAfw4yS0aWsmjXaGaihNSeLQQEJiFDRiupBASBahisUiFjXQhYKpQleKbZSCRVca6qpiceMT9EmuOXM78wh5AJdOUmqmztTMNOmHcn7blmwO587933tmgBBCCCGEEEIIIYQQQsjxEobv7vEC+W/4zo22yystf+y4AeRfd8Z3+f6rd49fvJyPgiGwWP/5W30NyD/MIwR905XsVr4s+vXMhgQAwu1LjcaPXY3GNQnIv8sXztbyEVGJx/0y07YrHgCQrrXr29ao0wr9z/KFJ+eXqnOKzDm2aMpqDAzPdzr1HXodAKtQopIUgJxiQmy6MltMybrGObJdzWqoVbX1bzs/9uy8lTxgcW61ECllLyR9QE4p34XZpwpyRNaBhXkweN+PmRp42QNW49ucoz9VzN6nNj6NvIPz+TnRjy1sj4rNYrj1x5mrpga+FgKrQLGJBhYXy6XHl4GcKkLycS2vIOeoGkz9i4VJMExcG+vsoMcegJV3TdSYATnn8tzKi5EYkNNCSE6WxL2n7r4C6/HVc2C4bdphXVqcACspov1u/FaNc7ODMVqqT4dYtqrIMrOjRaKWiHRxCqwCtbiuMhPZnypdoAqfAslEPuVvt6+VXvgwAIblTn13ht4HwGpK/OMXkMtKpFQZAHKSPMnJopjhyOxp+TAACOsPTTush5JgF5E0y28g1wu5zRFKTSfIN7Ki6MgOgOhPgGH0tSkijS2DjcQ2ZxaqipzPvUgGgZyMcEksIFOZPZVrRanV5TM3O/X9aXsIfT6vMVuIslLN0ob6RIQS1Ti2chGzh1xJWyPSbbAa3hS1A1cB5GIpTY/iY+dLL8V1zqzMESkAhgcN0wL9egKsoikd2YGQ88hsmDbUx+vyfEpvN+/BtFy0fQj9qJOBd26ug9W5LT//6y8hx+oIkOMjVPL7Y419RBLaEcl8i3R9FKzSotzltxDlyDwdXx6bZKKMXeqrsmZeah9CfzdFpC8hu1ukpSaybpArKyO0nT4WQrgmapbl2RqRxsEQ2BeRnoOVZ03UuhdYZcjLWcrEx6FS9ZuuFOypemZJAsPUxU59d15LYHXuqc6c4eLWeSBHLJiIyIisG12cgvYh9CVTRPoEVqObiq4yR5CLxUEgR+r+vJMFlenbpdE/I9KQbUSaSXFUmdMK82qFlumjFP7sR2TdadV2cI1+6Tanc/8rR+Yc53N0rnWEnmw4aV+V6f5NMHje180RyQtWkyIyV/j2LD2Ij0iwsuHnzEmBtXwUALzrb00N/Mj2ELqoMXeQK7XkGSD9d/ZKOaM7qgEW2hFp4qMpItVt53RmRV1lrqiqppTuA+m/W2WOjkqgF5YmwHDDVN+G7ZxOKKchcw0LK1Thvjtzq8wcFkNLzQj753QajSG7iBTYVDSVuYbo//oMSF8Fb5WdphleqA2A4Y35EHoxYHsIzZEdBsY/P6PncH/7d05mDgus5cMeAM/6w5/d5nRKTWz/Jq3SJ65SRuYQZtbAMLBo3mEtg42FTgO7hv6VaSB94n1S1Z3HmGJ70G7mqukQ+mPXOR33MrUAkP4YfCpz5gzqyg0whK6ZG9h2TmdW7KnAmrI5CqQfwvcyXGXO8EKp3VjjddMtoW1EGoxw1gtVExNU4X4IfHARVrVIdDcimed0ZmxfZSjoKusFcjENpGfeTYU7bSpVL3zwgmG53m1O54YoI+sN6uUnQHo0PC42VccFbm5Iu4fQpoj0zS4iBZaaTGW9auYlD5CeTLnIMOlLDUWyLAxPrtERl3PGtOns6jVtUKGS5khsnu98pSXT2QiZaPGEOIQzJHRFZwVoY+s2a+VbB/bFAhWY8NiECXG7JE1CVRQZWTd3PNKOrfI6JTEDV2QGDNEhpvzTh1ZrooIvpM+9idTVnakRxapMTmyO6HkqLrWe/n5msX3zGXPKEPjGdlmZZEeqYTG5MgOW/aXr7Yim7YciXbzsZ3nurKeN2XDGkhgTILsvoEK11uRnTcga51sTLyeLvKW7ESLya5EWsgivU3Jz5m2IUv5c2RHJ1us/2DvDladhYEwDH8hJjHaqFUrKG4Kcrz/O/zLvzjQUnUmJ7hxnnW7exHUibOnmk6P7AfpItPYsf1V7jwusgB2ZL66yLKIXe52bmSNQcLIxsgBuj4qsic7Mm+vspHkQHtmZH5EwshC7GjT3UVEdnfcyKbqMruVjqz30yLLKqSMrIs+19BGRNaCGVlwl9kSd6ycIiP7UTw3h5SR5aBxIeZSpjf+Qo2sWS6075LA6bjIesVRtEDSyDpQLeqTZkemwYpsKK+0uZdk9YqhjJnwn0akjSwDXdd8Fl8yI/MlJ7K8u9QOcqS/y/QR++eKBX+n458OVLphvlHUG4vYLSmxay26J5s9/yF2o4gGi8SRFSte4jMrSlZkHciRDR0gkW1wS6Eo+PNkfgZSR9aCb9W5+hU4kWkQI7s/LCCR7bBBUay8ydhmcUgdWagRx5leD1mWFUrV5MhCDUpkxdDWACSyAyZX7/bP3jzVsUeJVHSTTczE4um3xPYjm7KbNiNeJDKKp2fMFYzqSLBIx644jzUvX8px5sMIwdbnaldN/257qCHEV2agTup0altxsxBik9V32g4krzZMvYMQ++bH14BaygzH0MpFTNCMvX4/JdFk2uGd+WgxD3quIARLbZ76v7nc+oHp9MtijOQlhBBCCCGEEOIfe3AgAAAAAADk/9oIqqqqqqqqqqqqqqqqqqrSHhwSAAAAAAj6/9obBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAswAKL/iVlT+o9gAAAABJRU5ErkJggg==", 
+        };
+
+        // --- CORE: FUNGSI PEMANGGIL API GAS (PENGGANTI google.script.run) ---
+        async function runGasApi(action, data) {
+            try {
+                // Tampilkan Loading di tombol atau UI jika perlu
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: action, data: data }),
+                    // Mode 'no-cors' tidak bisa dipakai karena kita butuh respon JSON
+                    // Pastikan Deployment Web App di GAS diset ke "Anyone"
+                });
+                
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error("Error API:", error);
+                return { success: false, message: "Koneksi Gagal. Cek internet atau URL Script." };
+            }
+        }
+
+        // --- FUNGSI MODAL ---
+        function showModal(title, message, type = 'success') {
+            const modal = document.getElementById('custom-modal');
+            const icon = document.getElementById('modal-icon');
+            const btn = document.getElementById('modal-btn');
+            
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            
+            if(type === 'success') {
+                icon.innerHTML = '✅';
+                btn.className = 'modal-btn';
+            } else {
+                icon.innerHTML = '❌';
+                btn.className = 'modal-btn error';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.remove('active');
+        }
+
+        // Init Logo & Company Name
+        (function() {
+            let c = idAset.includes("RBT") ? "RBT" : (idAset.includes("TAN") ? "TAN" : "");
+            
+            // Set Nama Perusahaan
+            let ptName = "";
+            if(c === "RBT") ptName = "PT Rezeki Bersama Teknologi";
+            else if(c === "TAN") ptName = "PT Thopas Artha Nauli";
+
+            if(c && logoUrls[c]) {
+                const h = `<img src="${logoUrls[c]}" alt="Logo">`;
+                document.getElementById('main-logo-container').innerHTML = h;
+                document.getElementById('print-logo-copy').innerHTML = h;
+                document.getElementById('print-company-name').innerText = ptName;
+            }
+        })();
+
+        // Navigasi
+        function showMenu() { hideAll(); document.getElementById('menu-view').classList.remove('hidden'); }
+        function showLogin() { hideAll(); document.getElementById('login-view').classList.remove('hidden'); }
+        
+        async function showReport() { 
+            hideAll(); document.getElementById('report-view').classList.remove('hidden');
+            // Pre-fill Data Aset
+            document.getElementById('no_inv').value = idAset;
+            document.getElementById('nama_aset').value = "Loading...";
+            
+            const res = await runGasApi('getPublicDetails', idAset);
+            
+            if(res.success) {
+                document.getElementById('nama_aset').value = res.nama_aset || '-';
+                document.getElementById('merk').value = res.merk_model || '-';
+                document.getElementById('lokasi').value = res.lokasi_aset || '-';
+                document.getElementById('seri').value = res.no_seri || '-';
+            } else {
+                document.getElementById('nama_aset').value = "Gagal mengambil data";
+            }
+        }
+
+        function hideAll() {
+            ['menu-view','login-view','report-view','detail-view'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        }
+
+        // Login Logic
+        async function handleLogin() {
+            const u = document.getElementById('u').value;
+            const p = document.getElementById('p').value;
+            const btn = document.getElementById('loginBtn');
+            
+            if(!u || !p) { showModal("Gagal", "Mohon isi Username & Password", "error"); return; }
+            
+            btn.innerText = "Memproses..."; btn.disabled = true;
+            
+            const res = await runGasApi('login', { username: u, password: p });
+            
+            if(res.success) {
+                currentUser = { username: u, role: res.role };
+                hideAll();
+                document.getElementById('detail-view').classList.remove('hidden');
+                loadAssetDetails();
+            } else {
+                showModal("Login Gagal", res.message, "error");
+            }
+            btn.innerText = "Masuk"; btn.disabled = false;
+        }
+
+        async function loadAssetDetails() {
+            const div = document.getElementById('detail-content');
+            div.innerHTML = "Loading data...";
+            
+            const res = await runGasApi('getAdminDetails', { idAset: idAset, username: currentUser.username });
+
+            if(res.error) { div.innerText = res.error; return; }
+            
+            let html = '';
+            const keys = ["ID ASET", "NAMA BARANG", "KATEGORI", "MEREK & MODEL", "LOKASI SAAT INI", "PIC", "STATUS"];
+            const edits = ["LOKASI SAAT INI", "PIC", "STATUS"];
+            
+            keys.forEach(k => {
+                let val = res.data[k] || '-';
+                let btn = (currentUser.role === 'admin' && edits.includes(k)) ? 
+                       `<button class="text-blue-600 text-xs ml-2 font-medium hover:underline" onclick="editField('${k}')">Ubah</button>` : '';
+                
+                html += `<div class="flex justify-between py-3 border-b border-gray-100" id="row-${k.replace(/\s/g,'')}">
+                           <div><span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">${k}:</span><span class="text-gray-800 font-medium" id="val-${k.replace(/\s/g,'')}">${val}</span></div>
+                           <div class="flex items-center">${btn}</div>
+                         </div>`;
+            });
+            div.innerHTML = html;
+        }
+        
+        function editField(k) {
+             const safe = k.replace(/\s/g,'');
+             const val = document.getElementById('val-'+safe).innerText;
+             const row = document.getElementById('row-'+safe);
+             row.innerHTML = `
+                <div class="w-full bg-blue-50 p-3 rounded-lg">
+                    <span class="text-xs font-bold text-blue-600 uppercase">${k}</span>
+                    <input id="in-${safe}" value="${val}" class="border border-blue-300 p-2 w-full rounded mt-1 mb-2 focus:ring-2 focus:ring-blue-400 outline-none">
+                    <div class="text-right space-x-2">
+                        <button onclick="loadAssetDetails()" class="text-gray-500 text-sm font-medium hover:text-gray-700">Batal</button>
+                        <button onclick="saveField('${k}','${safe}')" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">Simpan</button>
+                    </div>
+                </div>
+             `;
+        }
+
+        async function saveField(k, safe) {
+             const newVal = document.getElementById('in-'+safe).value;
+             const res = await runGasApi('updateData', {
+                 idAset: idAset, field: k, newValue: newVal, username: currentUser.username
+             });
+
+             if(res.success) {
+                 loadAssetDetails();
+                 showModal("Berhasil", "Data aset telah diperbarui!", "success");
+             } else {
+                 showModal("Gagal", res.message, "error");
+             }
+        }
+
+        // Submit Laporan & Cetak
+        async function handleBAReportSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnKirim');
+            btn.innerText = "Mengirim..."; btn.disabled = true;
+
+            const data = {
+                idAset: idAset,
+                nama_pelapor: document.getElementById('nama').value,
+                id_karyawan: document.getElementById('nik').value,
+                jabatan: document.getElementById('jabatan').value,
+                departemen: document.getElementById('dept').value,
+                nama_aset: document.getElementById('nama_aset').value,
+                merk_model: document.getElementById('merk').value,
+                no_seri: document.getElementById('seri').value,
+                lokasi_aset: document.getElementById('lokasi').value,
+                jenis_laporan: document.querySelector('input[name="jenis"]:checked').value,
+                tanggal_kejadian: document.getElementById('tgl').value,
+                waktu_kejadian: document.getElementById('jam').value,
+                kronologi: document.getElementById('kronologi').value,
+                tindakan_diambil: document.getElementById('tindakan').value,
+                ttd_pelapor: document.getElementById('ttd1').value || document.getElementById('nama').value,
+                ttd_atasan: document.getElementById('ttd2').value,
+                ttd_ga: document.getElementById('ttd3').value
+            };
+
+            const res = await runGasApi('submitReport', data);
+
+            if(res.success) {
+                showModal("Laporan Terkirim", "Data berhasil disimpan. Silakan cetak dokumen Berita Acara.", "success");
+                btn.style.display = 'none'; // Sembunyikan tombol kirim
+                const cetakBtn = document.getElementById('btnCetak');
+                cetakBtn.classList.remove('hidden');
+                document.getElementById('btnCetak').onclick = function() { preparePrint(data); window.print(); };
+            } else {
+                showModal("Gagal Mengirim", res.message, "error");
+                btn.disabled = false; btn.innerText = "Kirim Laporan";
+            }
+        }
+
+        function preparePrint(d) {
+            // Format Tanggal Hari
+            const dateObj = new Date(d.tanggal_kejadian);
+            const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            
+            document.getElementById('p_hari').innerText = days[dateObj.getDay()] || "...";
+            document.getElementById('p_tgl').innerText = `${dateObj.getDate()} ${months[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+
+            const map = {
+                'p_nama': d.nama_pelapor, 'p_nik': d.id_karyawan, 'p_jab': d.jabatan, 'p_dept': d.departemen,
+                'p_inv': d.idAset, 'p_aset': d.nama_aset, 'p_merk': d.merk_model, 'p_seri': d.no_seri, 'p_lok': d.lokasi_aset,
+                'p_jenis': d.jenis_laporan, 'p_kronologi': d.kronologi, 'p_tindakan': d.tindakan_diambil || "-",
+                'p_ttd1': d.ttd_pelapor, 'p_ttd2': d.ttd_atasan || "( ................. )", 'p_ttd3': d.ttd_ga || "( ................. )"
+            };
+
+            for(let k in map) document.getElementById(k).innerText = map[k];
+        }
+        
+        function preparePrintAndShow() {
+             // Fungsi fallback jika user klik cetak lagi tanpa submit ulang
+             const d = {
+                nama_pelapor: document.getElementById('nama').value,
+                id_karyawan: document.getElementById('nik').value,
+                jabatan: document.getElementById('jabatan').value,
+                departemen: document.getElementById('dept').value,
+                idAset: idAset,
+                nama_aset: document.getElementById('nama_aset').value,
+                merk_model: document.getElementById('merk').value,
+                no_seri: document.getElementById('seri').value,
+                lokasi_aset: document.getElementById('lokasi').value,
+                jenis_laporan: document.querySelector('input[name="jenis"]:checked') ? document.querySelector('input[name="jenis"]:checked').value : "...",
+                tanggal_kejadian: document.getElementById('tgl').value,
+                kronologi: document.getElementById('kronologi').value,
+                tindakan_diambil: document.getElementById('tindakan').value,
+                ttd_pelapor: document.getElementById('ttd1').value,
+                ttd_atasan: document.getElementById('ttd2').value,
+                ttd_ga: document.getElementById('ttd3').value
+             };
+             preparePrint(d);
+             window.print();
+        }
+    </script>
 </body>
 </html>
