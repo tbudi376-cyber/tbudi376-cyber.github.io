@@ -313,46 +313,64 @@
             }
         }
 
-        // 3. Fungsi Load Data Dashboard (Dummy Fetch untuk Demo)
+        // 3. Fungsi Load Data Dashboard (REAL DATA dari Google Sheets)
         async function loadDashboardData() {
-            // Di implementasi nyata, kita buat action 'getDashboardStats' di GAS.
-            // Untuk sekarang, kita coba ambil data detail aset satu per satu (ini kurang efisien, nanti kita optimalkan di GAS).
-            // TAPI, agar tampilan langsung terlihat, saya buat simulasi data masuk ke tabel.
-            
-            // Simulasi request ke GAS untuk data tabel (Action baru perlu ditambahkan di GAS jika mau real list)
-            // Di sini saya pakai data dummy agar Anda melihat hasil layoutnya dulu.
-            
-            const dummyData = [
-                { id: 'RBT-001', nama: 'Laptop Dell Latitude', lokasi: 'R. Server', status: 'Baik' },
-                { id: 'RBT-002', nama: 'Projector Epson', lokasi: 'R. Meeting', status: 'Rusak' },
-                { id: 'TAN-005', nama: 'Kursi Staff', lokasi: 'Lobby', status: 'Baik' },
-            ];
-            
-            // Update Widget Stats (Simulasi)
-            document.getElementById('stat-total').innerText = "154";
-            document.getElementById('stat-baik').innerText = "142";
-            document.getElementById('stat-rusak').innerText = "12";
-
-            // Render Tabel
             const tbody = document.getElementById('dashboard-table-body');
-            tbody.innerHTML = '';
             
-            dummyData.forEach(item => {
-                let statusClass = item.status === 'Baik' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-                
-                const tr = `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 font-medium text-gray-900">${item.id}</td>
-                        <td class="px-6 py-4 text-gray-700">${item.nama}</td>
-                        <td class="px-6 py-4 text-gray-500">${item.lokasi}</td>
-                        <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${statusClass}">${item.status}</span></td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="cariAsetManual('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm font-bold">Detail</button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += tr;
-            });
+            // Tampilkan Loading State (Supaya kelihatan sedang bekerja)
+            document.getElementById('stat-total').innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px"></div>';
+            document.getElementById('stat-baik').innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px"></div>';
+            document.getElementById('stat-rusak').innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px"></div>';
+            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500"><div class="loader mb-2"></div>Sinkronisasi dengan Google Sheets...</td></tr>';
+
+            try {
+                // Minta data ke Google Apps Script
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getDashboardData', data: {} })
+                });
+                const json = await res.json();
+
+                if (json.success) {
+                    // Update Angka dengan Data Asli
+                    const stats = json.stats;
+                    document.getElementById('stat-total').innerText = stats.total;
+                    document.getElementById('stat-baik').innerText = stats.baik;
+                    document.getElementById('stat-rusak').innerText = stats.rusak;
+
+                    // Update Tabel dengan 5 Data Terakhir
+                    tbody.innerHTML = '';
+                    if (!json.latest || json.latest.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada data aset.</td></tr>';
+                    } else {
+                        json.latest.forEach(item => {
+                            let statusClass = 'bg-gray-100 text-gray-800';
+                            let s = (item.status || '').toLowerCase();
+                            if (s.includes('baik')) statusClass = 'bg-green-100 text-green-800';
+                            else if (s.includes('rusak') || s.includes('hilang')) statusClass = 'bg-red-100 text-red-800';
+                            
+                            const tr = `
+                                <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+                                    <td class="px-6 py-4 font-medium text-gray-900">${item.id}</td>
+                                    <td class="px-6 py-4 text-gray-700 font-semibold">${item.nama}</td>
+                                    <td class="px-6 py-4 text-gray-500">${item.lokasi}</td>
+                                    <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${statusClass}">${item.status}</span></td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button onclick="cariAsetManual('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm font-bold border border-blue-200 px-3 py-1 rounded hover:bg-blue-50 transition">Detail</button>
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.innerHTML += tr;
+                        });
+                    }
+                } else {
+                    console.error(json.message);
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Gagal memuat data. Cek koneksi server.</td></tr>';
+                }
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Koneksi Error.</td></tr>';
+            }
         }
 
         // 4. Fungsi Cari Aset (Reusing logic from previous code)
