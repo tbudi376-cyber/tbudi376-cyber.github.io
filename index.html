@@ -4,31 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Inventaris Barang</title>
-    <!-- Tailwind CSS (Untuk Desain Cepat) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome (Untuk Ikon Keren) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f3f4f6; }
         .sidebar-active { background-color: rgba(255, 255, 255, 0.1); border-right: 4px solid #3b82f6; }
         .hidden { display: none !important; }
-        
-        /* Animasi Loading */
-        .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%;
-            width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto;
-        }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="text-gray-800">
 
-    <!-- ==================== HALAMAN LOGIN ==================== -->
-    <div id="login-view" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-105 duration-300">
+    <!-- ==================== 1. HALAMAN LOGIN (DEFAULT) ==================== -->
+    <div id="login-view" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
             <div class="text-center mb-8">
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
                     <i class="fas fa-boxes text-2xl"></i>
@@ -36,403 +28,258 @@
                 <h2 class="text-3xl font-bold text-gray-800">Admin Inventaris</h2>
                 <p class="text-gray-500 text-sm mt-2">Silakan masuk untuk mengelola aset</p>
             </div>
-            
             <form onsubmit="handleLogin(event)" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-user"></i></span>
-                        <input type="text" id="u" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Masukkan username">
-                    </div>
+                    <label class="text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="u" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mt-1">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-lock"></i></span>
-                        <input type="password" id="p" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Masukkan password">
+                    <label class="text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="p" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mt-1">
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transition">Masuk Aplikasi</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== 2. HALAMAN PUBLIK (SAAT SCAN QR) ==================== -->
+    <div id="public-view" class="min-h-screen flex items-center justify-center bg-gray-100 p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div class="bg-blue-600 p-6 text-white text-center relative">
+                <h2 class="text-2xl font-bold">Detail Aset</h2>
+                <p class="text-blue-100 text-sm mt-1">Informasi Publik Inventaris</p>
+                <button onclick="goToLogin()" class="absolute top-4 right-4 text-white hover:text-gray-200 text-sm underline">Login Admin</button>
+            </div>
+            <div class="p-8">
+                <div id="public-loading" class="text-center py-10">
+                    <div class="loader mb-4"></div>
+                    <p class="text-gray-500">Mengambil data aset...</p>
+                </div>
+                
+                <div id="public-content" class="hidden space-y-4">
+                    <div class="text-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800" id="pub-nama">...</h3>
+                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-bold mt-2" id="pub-id">...</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm border-t border-b border-gray-100 py-4">
+                        <div><p class="text-gray-400 text-xs uppercase">Merk / Model</p><p class="font-semibold text-gray-700" id="pub-merk">...</p></div>
+                        <div><p class="text-gray-400 text-xs uppercase">Nomor Seri</p><p class="font-semibold text-gray-700" id="pub-seri">...</p></div>
+                        <div><p class="text-gray-400 text-xs uppercase">Lokasi</p><p class="font-semibold text-gray-700" id="pub-lokasi">...</p></div>
+                        <div><p class="text-gray-400 text-xs uppercase">Status</p><p class="font-semibold text-gray-700" id="pub-status">...</p></div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button onclick="alert('Silakan login admin untuk melaporkan kerusakan.')" class="w-full bg-red-50 text-red-600 hover:bg-red-100 py-3 rounded-xl font-bold transition flex justify-center items-center gap-2">
+                            <i class="fas fa-exclamation-circle"></i> Laporkan Kerusakan
+                        </button>
                     </div>
                 </div>
-                <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition duration-300 flex justify-center items-center gap-2">
-                    <span>Masuk Aplikasi</span> <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
-            <div class="mt-6 text-center text-xs text-gray-400">
-                &copy; 2025 Sistem Aset Terintegrasi
+
+                <div id="public-error" class="hidden text-center py-8">
+                    <i class="fas fa-times-circle text-red-500 text-4xl mb-3"></i>
+                    <p class="text-gray-600">Data aset tidak ditemukan.</p>
+                    <button onclick="goToLogin()" class="mt-4 text-blue-600 font-bold hover:underline">Kembali ke Home</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== DASHBOARD UTAMA (SETELAH LOGIN) ==================== -->
+    <!-- ==================== 3. DASHBOARD ADMIN ==================== -->
     <div id="dashboard-view" class="hidden flex h-screen overflow-hidden">
-        
         <!-- SIDEBAR -->
         <aside class="w-64 bg-gray-900 text-white flex-shrink-0 hidden md:flex flex-col shadow-xl">
             <div class="p-6 border-b border-gray-800 flex items-center gap-3">
-                <i class="fas fa-boxes text-blue-400 text-2xl"></i>
-                <span class="text-xl font-bold tracking-wider">INVENTARIS</span>
+                <i class="fas fa-boxes text-blue-400 text-2xl"></i> <span class="text-xl font-bold tracking-wider">INVENTARIS</span>
             </div>
-            
             <nav class="flex-1 overflow-y-auto py-4">
                 <ul class="space-y-1">
-                    <li>
-                        <a href="#" onclick="switchTab('home')" id="nav-home" class="flex items-center px-6 py-3 hover:bg-gray-800 transition sidebar-active">
-                            <i class="fas fa-tachometer-alt w-6"></i> <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" onclick="switchTab('scan')" id="nav-scan" class="flex items-center px-6 py-3 hover:bg-gray-800 transition">
-                            <i class="fas fa-qrcode w-6"></i> <span>Scan & Cari Aset</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" onclick="switchTab('lapor')" id="nav-lapor" class="flex items-center px-6 py-3 hover:bg-gray-800 transition">
-                            <i class="fas fa-exclamation-triangle w-6"></i> <span>Lapor Kerusakan</span>
-                        </a>
-                    </li>
+                    <li><a href="#" onclick="switchTab('home')" id="nav-home" class="flex items-center px-6 py-3 hover:bg-gray-800 transition sidebar-active"><i class="fas fa-tachometer-alt w-6"></i> <span>Dashboard</span></a></li>
+                    <li><a href="#" onclick="switchTab('scan')" id="nav-scan" class="flex items-center px-6 py-3 hover:bg-gray-800 transition"><i class="fas fa-search w-6"></i> <span>Cari Aset</span></a></li>
+                    <li><a href="#" onclick="switchTab('lapor')" id="nav-lapor" class="flex items-center px-6 py-3 hover:bg-gray-800 transition"><i class="fas fa-file-alt w-6"></i> <span>Lapor Insiden</span></a></li>
                 </ul>
             </nav>
-
-            <div class="p-4 border-t border-gray-800">
-                <button onclick="logout()" class="flex items-center gap-3 text-gray-400 hover:text-white transition w-full">
-                    <i class="fas fa-sign-out-alt"></i> <span>Keluar</span>
-                </button>
-            </div>
+            <div class="p-4 border-t border-gray-800"><button onclick="logout()" class="flex items-center gap-3 text-gray-400 hover:text-white transition w-full"><i class="fas fa-sign-out-alt"></i> <span>Keluar</span></button></div>
         </aside>
 
         <!-- KONTEN UTAMA -->
         <div class="flex-1 flex flex-col overflow-hidden relative">
-            
-            <!-- TOP NAVBAR -->
             <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-10">
-                <div class="flex items-center gap-4">
-                    <button class="md:hidden text-gray-600 focus:outline-none">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    <h2 class="text-xl font-semibold text-gray-800" id="page-title">Dashboard Overview</h2>
-                </div>
+                <h2 class="text-xl font-semibold text-gray-800" id="page-title">Dashboard Overview</h2>
                 <div class="flex items-center gap-3">
-                    <div class="text-right hidden sm:block">
-                        <div class="text-sm font-bold text-gray-800" id="user-name-display">Admin</div>
-                        <div class="text-xs text-gray-500" id="user-role-display">Super User</div>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border border-blue-200">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <div class="text-right hidden sm:block"><div class="text-sm font-bold text-gray-800" id="user-name-display">Admin</div><div class="text-xs text-gray-500">Super User</div></div>
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border border-blue-200"><i class="fas fa-user"></i></div>
                 </div>
             </header>
 
-            <!-- MAIN CONTENT AREA -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                
-                <!-- 1. TAB DASHBOARD (STATS) -->
+                <!-- TAB HOME -->
                 <div id="tab-home" class="tab-content">
-                    <!-- Widgets -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <!-- Card 1 -->
-                        <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500 flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs font-bold uppercase mb-1">Total Aset</p>
-                                <h3 class="text-2xl font-bold text-gray-800" id="stat-total">...</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                <i class="fas fa-cubes text-xl"></i>
-                            </div>
-                        </div>
-                        <!-- Card 2 -->
-                        <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500 flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs font-bold uppercase mb-1">Kondisi Baik</p>
-                                <h3 class="text-2xl font-bold text-gray-800" id="stat-baik">...</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                                <i class="fas fa-check-circle text-xl"></i>
-                            </div>
-                        </div>
-                        <!-- Card 3 -->
-                        <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500 flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs font-bold uppercase mb-1">Rusak / Hilang</p>
-                                <h3 class="text-2xl font-bold text-gray-800" id="stat-rusak">...</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                                <i class="fas fa-tools text-xl"></i>
-                            </div>
-                        </div>
-                        <!-- Card 4 -->
-                        <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-yellow-500 flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-xs font-bold uppercase mb-1">Peminjaman</p>
-                                <h3 class="text-2xl font-bold text-gray-800">0</h3>
-                            </div>
-                            <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
-                                <i class="fas fa-hand-holding text-xl"></i>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500 flex justify-between"><div><p class="text-gray-500 text-xs font-bold">TOTAL ASET</p><h3 class="text-2xl font-bold" id="stat-total">...</h3></div><i class="fas fa-cubes text-3xl text-blue-200"></i></div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500 flex justify-between"><div><p class="text-gray-500 text-xs font-bold">KONDISI BAIK</p><h3 class="text-2xl font-bold" id="stat-baik">...</h3></div><i class="fas fa-check-circle text-3xl text-green-200"></i></div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500 flex justify-between"><div><p class="text-gray-500 text-xs font-bold">RUSAK / HILANG</p><h3 class="text-2xl font-bold" id="stat-rusak">...</h3></div><i class="fas fa-tools text-3xl text-red-200"></i></div>
                     </div>
-
-                    <!-- Placeholder Table -->
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                            <h3 class="font-bold text-gray-800">Data Aset Terbaru</h3>
-                            <button class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat Semua</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
-                                        <th class="px-6 py-3 font-semibold">ID Aset</th>
-                                        <th class="px-6 py-3 font-semibold">Nama Barang</th>
-                                        <th class="px-6 py-3 font-semibold">Lokasi</th>
-                                        <th class="px-6 py-3 font-semibold">Status</th>
-                                        <th class="px-6 py-3 font-semibold text-right">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="text-sm divide-y divide-gray-100" id="dashboard-table-body">
-                                    <tr>
-                                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                                            <div class="loader mb-2"></div>
-                                            Memuat data dari Google Sheets...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden"><table class="w-full text-left"><thead class="bg-gray-50 text-gray-600 text-xs uppercase"><tr class="border-b"><th class="px-6 py-3">ID Aset</th><th class="px-6 py-3">Nama Barang</th><th class="px-6 py-3">Lokasi</th><th class="px-6 py-3">Status</th><th class="px-6 py-3 text-right">Aksi</th></tr></thead><tbody class="text-sm divide-y" id="dashboard-table-body"></tbody></table></div>
                 </div>
 
-                <!-- 2. TAB SCAN / CARI -->
+                <!-- TAB SCAN -->
                 <div id="tab-scan" class="tab-content hidden">
                     <div class="bg-white rounded-xl shadow-sm p-8 max-w-2xl mx-auto text-center">
-                        <div class="mb-6">
-                             <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
-                                <i class="fas fa-search text-3xl"></i>
-                             </div>
-                             <h3 class="text-xl font-bold text-gray-800">Cari Detail Aset</h3>
-                             <p class="text-gray-500">Masukkan ID Aset atau Scan QR Code untuk melihat detail.</p>
-                        </div>
-                        
-                        <div class="flex gap-2 max-w-md mx-auto mb-6">
-                            <input type="text" id="input-search-id" placeholder="Contoh: RBT-001" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
-                            <button onclick="cariAsetManual()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium"><i class="fas fa-search"></i> Cari</button>
-                        </div>
-
-                        <div id="search-result" class="hidden text-left bg-gray-50 p-6 rounded-xl border border-gray-200">
-                            <!-- Hasil pencarian akan muncul di sini via JS -->
-                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Cari Detail Aset</h3>
+                        <div class="flex gap-2 max-w-md mx-auto mb-6"><input type="text" id="input-search-id" placeholder="ID Aset (ex: RBT-001)" class="flex-1 border rounded-lg px-4 py-2"><button onclick="cariAsetManual()" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Cari</button></div>
+                        <div id="search-result" class="hidden text-left bg-gray-50 p-6 rounded-xl border"></div>
                     </div>
                 </div>
-                
-                 <!-- 3. TAB LAPOR (Formulir yang lama tapi dipercantik) -->
+
+                <!-- TAB LAPOR -->
                 <div id="tab-lapor" class="tab-content hidden">
-                    <div class="bg-white rounded-xl shadow-sm p-6 max-w-4xl mx-auto">
-                         <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Formulir Laporan Kerusakan</h3>
-                         <p class="text-sm text-gray-500 mb-6">Gunakan fitur ini untuk melaporkan aset yang rusak atau hilang.</p>
-                         
-                         <!-- Disini form pelaporan (sama logika seperti sebelumnya) -->
-                         <div class="text-center py-10 bg-gray-50 rounded-lg border-dashed border-2 border-gray-300">
-                             <p class="text-gray-500">Silakan cari aset di menu <strong>Scan & Cari</strong> terlebih dahulu, <br>lalu klik tombol "Lapor" pada detail aset tersebut.</p>
-                             <button onclick="switchTab('scan')" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Ke Menu Cari</button>
-                         </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 max-w-4xl mx-auto text-center">
+                        <h3 class="text-lg font-bold mb-4">Formulir Laporan</h3>
+                        <p class="text-gray-500 mb-4">Silakan cari aset di menu "Cari Aset" lalu klik tombol Lapor.</p>
+                        <button onclick="switchTab('scan')" class="bg-blue-600 text-white px-6 py-2 rounded-lg">Ke Menu Cari</button>
                     </div>
                 </div>
-
             </main>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- KONFIGURASI (JANGAN LUPA GANTI URL INI) ---
+        // --- GANTI URL DI BAWAH INI DENGAN URL APPS SCRIPT ANDA ---
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbya3Tv3gyDEXg4FmxjaDjM64xzT8-78pI25EwhVV6PEGiAt2GXosIrJOqeCdQ2dNl1X/exec'; 
 
-        // State Management
-        let currentUser = null;
-        let dashboardData = [];
+        // --- SISTEM ROUTING OTOMATIS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idAset = urlParams.get('id');
 
-        // 1. Fungsi Ganti Tab (SPA Feel)
-        function switchTab(tabName) {
-            // Sembunyikan semua tab
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            // Tampilkan tab yang dipilih
-            document.getElementById('tab-' + tabName).classList.remove('hidden');
-            
-            // Update Sidebar Active State
-            document.querySelectorAll('aside a').forEach(el => el.classList.remove('sidebar-active'));
-            document.getElementById('nav-' + tabName).classList.add('sidebar-active');
-            
-            // Update Judul Halaman
-            const titles = {
-                'home': 'Dashboard Overview',
-                'scan': 'Pencarian Aset',
-                'lapor': 'Pelaporan Insiden'
-            };
-            document.getElementById('page-title').innerText = titles[tabName];
+            if (idAset) {
+                // KASUS 1: ADA ID DI URL -> TAMPILKAN PUBLIC VIEW
+                showPublicView(idAset);
+            } else {
+                // KASUS 2: TIDAK ADA ID -> TAMPILKAN LOGIN
+                document.getElementById('login-view').classList.remove('hidden');
+            }
+        });
+
+        // --- FUNGSI PUBLIC VIEW (QR SCAN) ---
+        async function showPublicView(id) {
+            document.getElementById('public-view').classList.remove('hidden');
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.add('hidden');
+
+            try {
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getPublicDetails', data: { idAset: id } })
+                });
+                const json = await res.json();
+
+                document.getElementById('public-loading').classList.add('hidden');
+                
+                if (json.success) {
+                    document.getElementById('public-content').classList.remove('hidden');
+                    document.getElementById('pub-nama').innerText = json.nama_aset;
+                    document.getElementById('pub-id').innerText = id;
+                    document.getElementById('pub-merk').innerText = json.merk_model || '-';
+                    document.getElementById('pub-seri').innerText = json.no_seri || '-';
+                    document.getElementById('pub-lokasi').innerText = json.lokasi_aset || '-';
+                    document.getElementById('pub-status').innerText = "Terdaftar"; // Default
+                } else {
+                    document.getElementById('public-error').classList.remove('hidden');
+                }
+            } catch (e) {
+                document.getElementById('public-loading').classList.add('hidden');
+                document.getElementById('public-error').classList.remove('hidden');
+            }
         }
 
-        // 2. Fungsi Login
+        function goToLogin() {
+            window.location.href = window.location.pathname; // Reload tanpa query param
+        }
+
+        // --- FUNGSI DASHBOARD (ADMIN) ---
+        let currentUser = null;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            document.querySelectorAll('aside a').forEach(el => el.classList.remove('sidebar-active'));
+            document.getElementById('nav-' + tabName).classList.add('sidebar-active');
+            document.getElementById('page-title').innerText = tabName === 'home' ? 'Dashboard Overview' : (tabName === 'scan' ? 'Pencarian Aset' : 'Pelaporan');
+        }
+
         async function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('u').value;
             const p = document.getElementById('p').value;
             const btn = document.getElementById('loginBtn');
-            const originalBtnContent = btn.innerHTML;
-
-            btn.innerHTML = '<div class="loader" style="width:20px; height:20px; border-width:2px;"></div>';
-            btn.disabled = true;
-
-            try {
-                // Panggil API Google Apps Script
-                const res = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'login', data: { username: u, password: p } })
-                });
-                const result = await res.json();
-
-                if (result.success) {
-                    currentUser = { username: u, role: result.role };
-                    
-                    // Update UI User
-                    document.getElementById('user-name-display').innerText = u;
-                    document.getElementById('user-role-display').innerText = result.role;
-
-                    // Pindah Tampilan
-                    document.getElementById('login-view').classList.add('hidden');
-                    document.getElementById('dashboard-view').classList.remove('hidden');
-                    
-                    // Load Data Dashboard
-                    loadDashboardData();
-                } else {
-                    alert('Login Gagal: ' + result.message);
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Terjadi kesalahan koneksi.');
-            } finally {
-                btn.innerHTML = originalBtnContent;
-                btn.disabled = false;
-            }
-        }
-
-        // 3. Fungsi Load Data Dashboard (REAL DATA dari Google Sheets)
-        async function loadDashboardData() {
-            const tbody = document.getElementById('dashboard-table-body');
             
-            // Tampilkan Loading State (Supaya kelihatan sedang bekerja)
-            document.getElementById('stat-total').innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px"></div>';
-            document.getElementById('stat-baik').innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px"></div>';
-            document.getElementById('stat-rusak').innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px"></div>';
-            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500"><div class="loader mb-2"></div>Sinkronisasi dengan Google Sheets...</td></tr>';
+            btn.innerText = 'Memuat...'; btn.disabled = true;
 
             try {
-                // Minta data ke Google Apps Script
-                const res = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'getDashboardData', data: {} })
-                });
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'login', data: { username: u, password: p } }) });
                 const json = await res.json();
 
                 if (json.success) {
-                    // Update Angka dengan Data Asli
-                    const stats = json.stats;
-                    document.getElementById('stat-total').innerText = stats.total;
-                    document.getElementById('stat-baik').innerText = stats.baik;
-                    document.getElementById('stat-rusak').innerText = stats.rusak;
-
-                    // Update Tabel dengan 5 Data Terakhir
-                    tbody.innerHTML = '';
-                    if (!json.latest || json.latest.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Belum ada data aset.</td></tr>';
-                    } else {
-                        json.latest.forEach(item => {
-                            let statusClass = 'bg-gray-100 text-gray-800';
-                            let s = (item.status || '').toLowerCase();
-                            if (s.includes('baik')) statusClass = 'bg-green-100 text-green-800';
-                            else if (s.includes('rusak') || s.includes('hilang')) statusClass = 'bg-red-100 text-red-800';
-                            
-                            const tr = `
-                                <tr class="hover:bg-gray-50 transition border-b border-gray-100">
-                                    <td class="px-6 py-4 font-medium text-gray-900">${item.id}</td>
-                                    <td class="px-6 py-4 text-gray-700 font-semibold">${item.nama}</td>
-                                    <td class="px-6 py-4 text-gray-500">${item.lokasi}</td>
-                                    <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${statusClass}">${item.status}</span></td>
-                                    <td class="px-6 py-4 text-right">
-                                        <button onclick="cariAsetManual('${item.id}')" class="text-blue-600 hover:text-blue-800 text-sm font-bold border border-blue-200 px-3 py-1 rounded hover:bg-blue-50 transition">Detail</button>
-                                    </td>
-                                </tr>
-                            `;
-                            tbody.innerHTML += tr;
-                        });
-                    }
+                    currentUser = json;
+                    document.getElementById('user-name-display').innerText = u;
+                    document.getElementById('login-view').classList.add('hidden');
+                    document.getElementById('dashboard-view').classList.remove('hidden');
+                    loadDashboardData();
                 } else {
-                    console.error(json.message);
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Gagal memuat data. Cek koneksi server.</td></tr>';
+                    alert('Login Gagal: ' + json.message);
                 }
-            } catch (error) {
-                console.error(error);
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Koneksi Error.</td></tr>';
-            }
+            } catch (e) { alert('Error Koneksi'); }
+            btn.innerText = 'Masuk Aplikasi'; btn.disabled = false;
         }
 
-        // 4. Fungsi Cari Aset (Reusing logic from previous code)
-        async function cariAsetManual(prefillId = null) {
-            const id = prefillId || document.getElementById('input-search-id').value;
-            if(!id) return alert("Masukkan ID Aset");
-
-            if(!prefillId) switchTab('scan'); // Pindah tab jika search dari luar
+        async function loadDashboardData() {
+            const tbody = document.getElementById('dashboard-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-gray-500"><div class="loader mb-2"></div>Sinkronisasi Data...</td></tr>';
             
-            const resultDiv = document.getElementById('search-result');
-            resultDiv.classList.remove('hidden');
-            resultDiv.innerHTML = '<div class="loader"></div> <p class="text-center mt-2">Mencari data...</p>';
-
             try {
-                // Panggil API GAS (action: getAdminDetails)
-                const res = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        action: 'getAdminDetails', 
-                        data: { idAset: id, username: currentUser ? currentUser.username : 'Guest' } 
-                    })
-                });
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'getDashboardData', data: {} }) });
                 const json = await res.json();
 
-                if(json.success) {
-                    const d = json.data;
-                    resultDiv.innerHTML = `
-                        <div class="flex justify-between items-start mb-4">
-                            <h4 class="font-bold text-lg text-blue-800">${d['NAMA BARANG']}</h4>
-                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold">${d['ID ASET']}</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-                            <div><p class="text-gray-500 text-xs">Merk/Model</p><p class="font-semibold">${d['MEREK & MODEL'] || '-'}</p></div>
-                            <div><p class="text-gray-500 text-xs">Lokasi</p><p class="font-semibold">${d['LOKASI SAAT INI']}</p></div>
-                            <div><p class="text-gray-500 text-xs">PIC</p><p class="font-semibold">${d['PIC'] || '-'}</p></div>
-                            <div><p class="text-gray-500 text-xs">Status</p><p class="font-semibold">${d['STATUS']}</p></div>
-                        </div>
-                        <div class="flex gap-2">
-                             <a href="?id=${id}" target="_blank" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-center py-2 rounded-lg font-medium transition">
-                                <i class="fas fa-external-link-alt"></i> Halaman Publik
-                             </a>
-                             <button class="flex-1 bg-red-100 hover:bg-red-200 text-red-600 py-2 rounded-lg font-medium transition">
-                                <i class="fas fa-exclamation-triangle"></i> Lapor Rusak
-                             </button>
-                        </div>
-                    `;
-                } else {
-                    resultDiv.innerHTML = `<p class="text-red-500 text-center font-bold"><i class="fas fa-times-circle"></i> Data tidak ditemukan.</p>`;
+                if (json.success) {
+                    const s = json.stats;
+                    document.getElementById('stat-total').innerText = s.total;
+                    document.getElementById('stat-baik').innerText = s.baik;
+                    document.getElementById('stat-rusak').innerText = s.rusak;
+
+                    tbody.innerHTML = '';
+                    json.latest.forEach(item => {
+                        let badge = item.status.toLowerCase().includes('baik') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                        tbody.innerHTML += `<tr class="hover:bg-gray-50 border-b"><td class="px-6 py-4 font-medium">${item.id}</td><td class="px-6 py-4">${item.nama}</td><td class="px-6 py-4 text-gray-500">${item.lokasi}</td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${badge}">${item.status}</span></td><td class="px-6 py-4 text-right"><button onclick="cariAsetManual('${item.id}')" class="text-blue-600 font-bold text-sm">Detail</button></td></tr>`;
+                    });
                 }
-            } catch (e) {
-                resultDiv.innerHTML = `<p class="text-red-500 text-center">Error koneksi.</p>`;
-            }
+            } catch (e) { console.error(e); }
         }
 
-        function logout() {
-            currentUser = null;
-            document.getElementById('dashboard-view').classList.add('hidden');
-            document.getElementById('login-view').classList.remove('hidden');
-            // Reset forms
-            document.getElementById('u').value = '';
-            document.getElementById('p').value = '';
+        async function cariAsetManual(prefillId = null) {
+            const id = prefillId || document.getElementById('input-search-id').value;
+            if(!id) return alert('Masukkan ID');
+            if(!prefillId) switchTab('scan');
+
+            const div = document.getElementById('search-result');
+            div.classList.remove('hidden');
+            div.innerHTML = '<div class="loader"></div>';
+
+            try {
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify({ action: 'getAdminDetails', data: { idAset: id, username: currentUser.username } }) });
+                const json = await res.json();
+                
+                if (json.success) {
+                    const d = json.data;
+                    div.innerHTML = `<h4 class="font-bold text-lg text-blue-800 mb-2">${d['NAMA BARANG']}</h4><div class="grid grid-cols-2 gap-4 text-sm mb-4"><div><p class="text-xs text-gray-500">Lokasi</p><p class="font-bold">${d['LOKASI SAAT INI']}</p></div><div><p class="text-xs text-gray-500">Status</p><p class="font-bold">${d['STATUS']}</p></div></div><a href="?id=${id}" target="_blank" class="block w-full text-center bg-gray-100 py-2 rounded text-blue-600 font-bold hover:bg-gray-200">Lihat Tampilan Publik</a>`;
+                } else {
+                    div.innerHTML = '<p class="text-red-500">Data tidak ditemukan</p>';
+                }
+            } catch (e) { div.innerHTML = '<p class="text-red-500">Error</p>'; }
         }
+
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
